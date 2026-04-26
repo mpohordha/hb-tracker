@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HB Tracker</string>
+    <string name="title_activity_main">HB Tracker</string>
+    <string name="package_name">gh.gov.mpohor.hbtracker</string>
+    <string name="custom_url_scheme">gh.gov.mpohor.hbtracker</string>
+</resources>

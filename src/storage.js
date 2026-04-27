@@ -30,6 +30,7 @@ export async function removeItem(key) {
 
 const PROFILE_KEY = 'hb.profile.v1'
 const READINGS_KEY = 'hb.readings.v1'
+const WEIGHTS_KEY = 'hb.weights.v1'
 
 export async function getProfile() {
   const raw = await getItem(PROFILE_KEY)
@@ -50,8 +51,10 @@ export async function updateProfile(patch) {
 export async function clearAll() {
   await removeItem(PROFILE_KEY)
   await removeItem(READINGS_KEY)
+  await removeItem(WEIGHTS_KEY)
 }
 
+// ===== HB readings =====
 export async function getReadings() {
   const raw = await getItem(READINGS_KEY)
   return raw ? JSON.parse(raw) : []
@@ -74,4 +77,44 @@ export async function deleteReading(id) {
   const next = readings.filter(r => r.id !== id)
   await saveReadings(next)
   return next
+}
+
+// ===== Weight measurements =====
+export async function getWeights() {
+  const raw = await getItem(WEIGHTS_KEY)
+  return raw ? JSON.parse(raw) : []
+}
+
+export async function saveWeights(weights) {
+  await setItem(WEIGHTS_KEY, JSON.stringify(weights))
+}
+
+export async function addWeight(entry) {
+  const weights = await getWeights()
+  weights.push(entry)
+  weights.sort((a, b) => new Date(a.date) - new Date(b.date))
+  await saveWeights(weights)
+  return weights
+}
+
+export async function deleteWeight(id) {
+  const weights = await getWeights()
+  const next = weights.filter(w => w.id !== id)
+  await saveWeights(next)
+  return next
+}
+
+// ===== Export / Backup =====
+export async function exportAll() {
+  const profile = await getProfile()
+  const readings = await getReadings()
+  const weights = await getWeights()
+  return {
+    appName: 'HB Tracker',
+    exportVersion: 1,
+    exportedAt: new Date().toISOString(),
+    profile,
+    readings,
+    weights,
+  }
 }

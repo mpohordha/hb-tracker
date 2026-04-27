@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { classify, STATUS_META, getAdvice, getTrendMessage, getExpectedGainNote } from '../hbLogic'
 import {
   LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip,
@@ -11,6 +12,59 @@ function formatDate(iso) {
 function formatDateLong(iso) {
   const d = new Date(iso)
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+// A reading row that responds to long-press to delete (not single tap)
+function ReadingRow({ r, onDelete }) {
+  const timerRef = useRef(null)
+  const triggeredRef = useRef(false)
+  const status = classify(r.hb)
+  const meta = STATUS_META[status]
+
+  const startPress = () => {
+    triggeredRef.current = false
+    timerRef.current = setTimeout(() => {
+      triggeredRef.current = true
+      if (navigator.vibrate) navigator.vibrate(30)
+      if (confirm(`Delete the reading of ${r.hb.toFixed(1)} g/dL from ${formatDateLong(r.date)}?`)) {
+        onDelete(r.id)
+      }
+    }, 600)
+  }
+
+  const cancelPress = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  return (
+    <li
+      className="reading-row"
+      onMouseDown={startPress}
+      onMouseUp={cancelPress}
+      onMouseLeave={cancelPress}
+      onTouchStart={startPress}
+      onTouchEnd={cancelPress}
+      onTouchCancel={cancelPress}
+      style={{ userSelect: 'none', cursor: 'pointer' }}
+    >
+      <div className="left">
+        <div>
+          <span className="value">{r.hb.toFixed(1)}</span>
+          <span className="unit">g/dL</span>
+        </div>
+        <div className="date">
+          {formatDateLong(r.date)}
+          {r.week ? ` · Week ${r.week}` : ''}
+        </div>
+      </div>
+      <span className={`status-pill status-${meta.color}`}>
+        {meta.label}
+      </span>
+    </li>
+  )
 }
 
 export default function Home({ profile, readings, onAddClick, onDelete }) {
@@ -114,6 +168,7 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
                     tick={{ fontSize: 11, fill: '#8C7A6B' }}
                     tickLine={false}
                     axisLine={{ stroke: '#E5DCC8' }}
+                    interval="preserveStartEnd"
                   />
                   <YAxis
                     domain={[5, 15]}
@@ -161,33 +216,15 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
           </div>
         ) : (
           <ul className="reading-list">
-            {sorted.map(r => {
-              const s = classify(r.hb)
-              const m = STATUS_META[s]
-              return (
-                <li key={r.id} className="reading-row" onClick={() => onDelete(r.id)}>
-                  <div className="left">
-                    <div>
-                      <span className="value">{r.hb.toFixed(1)}</span>
-                      <span className="unit">g/dL</span>
-                    </div>
-                    <div className="date">
-                      {formatDateLong(r.date)}
-                      {r.week ? ` · Week ${r.week}` : ''}
-                    </div>
-                  </div>
-                  <span className={`status-pill status-${m.color}`}>
-                    {m.label}
-                  </span>
-                </li>
-              )
-            })}
+            {sorted.map(r => (
+              <ReadingRow key={r.id} r={r} onDelete={onDelete} />
+            ))}
           </ul>
         )}
 
         {readings.length > 0 && (
           <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'var(--ink-mute)' }}>
-            Tap a reading to delete it.
+            Press and hold a reading to delete it.
           </div>
         )}
       </main>

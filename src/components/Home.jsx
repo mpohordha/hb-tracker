@@ -1,4 +1,4 @@
-import { classify, STATUS_META, getAdvice, getTrendMessage } from '../hbLogic'
+import { classify, STATUS_META, getAdvice, getTrendMessage, getExpectedGainNote } from '../hbLogic'
 import {
   LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip,
 } from 'recharts'
@@ -20,6 +20,7 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
   const meta = status ? STATUS_META[status] : null
   const advice = status ? getAdvice(status) : null
   const trend = getTrendMessage(readings)
+  const expectNote = status ? getExpectedGainNote(status) : null
 
   const chartData = [...readings]
     .sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -70,7 +71,7 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
         {/* Status + advice */}
         {latest && meta && advice && (
           <div className="card" style={{ marginTop: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
               <div className="card-title" style={{ marginBottom: 0 }}>What this means</div>
               <span className={`status-pill status-${meta.color}`}>
                 <span className="status-dot" />
@@ -90,6 +91,13 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
                 <p key={i}>{line}</p>
               ))}
             </div>
+
+            {expectNote && (
+              <div className="expect-note">
+                <strong>What to expect</strong>
+                {expectNote}
+              </div>
+            )}
           </div>
         )}
 

@@ -31,6 +31,8 @@
 
   --serif: 'Fraunces', Georgia, serif;
   --sans: 'Nunito Sans', system-ui, -apple-system, sans-serif;
+
+  --bottom-nav-h: 68px;
 }
 
 * {
@@ -52,7 +54,6 @@ html, body, #root {
 
 body {
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 button {
@@ -102,7 +103,7 @@ input, select {
   color: var(--cream);
   font-family: var(--serif);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .app-header h1 {
@@ -121,7 +122,59 @@ input, select {
 
 .app-main {
   flex: 1;
-  padding: 20px 20px 100px;
+  padding: 20px 20px calc(20px + var(--bottom-nav-h) + env(safe-area-inset-bottom));
+}
+
+/* ============ Bottom Nav ============ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--cream);
+  border-top: 1px solid var(--line);
+  display: flex;
+  height: var(--bottom-nav-h);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 60;
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--ink-mute);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: color 0.15s ease;
+  position: relative;
+}
+
+.nav-btn .nav-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav-btn.active {
+  color: var(--terracotta);
+}
+
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: var(--terracotta);
+  border-radius: 0 0 3px 3px;
 }
 
 /* ============ Cards ============ */
@@ -190,6 +243,8 @@ input, select {
   padding: 8px;
   width: auto;
   min-height: 0;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* ============ Forms ============ */
@@ -232,7 +287,7 @@ input, select {
 
 /* ============ Welcome / Onboarding ============ */
 .welcome {
-  padding: 40px 24px;
+  padding: 40px 24px 24px;
   text-align: center;
 }
 
@@ -243,7 +298,7 @@ input, select {
   background: var(--terracotta);
   color: var(--cream);
   font-family: var(--serif);
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   display: grid;
   place-items: center;
@@ -262,14 +317,9 @@ input, select {
 
 .welcome p {
   color: var(--ink-soft);
-  margin-bottom: 32px;
+  margin-bottom: 0;
   font-size: 15px;
   line-height: 1.6;
-}
-
-.welcome .btn {
-  max-width: 320px;
-  margin: 0 auto;
 }
 
 /* ============ Status badges ============ */
@@ -480,6 +530,27 @@ input, select {
   margin-top: 8px;
 }
 
+/* ============ Expected-gain note ============ */
+.expect-note {
+  background: var(--terracotta-tint);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--terracotta);
+}
+
+.expect-note strong {
+  color: var(--terracotta);
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
 /* ============ Chart ============ */
 .chart-wrap {
   margin: 8px -8px 0;
@@ -540,18 +611,18 @@ input, select {
   to { transform: translateY(0); }
 }
 
-/* ============ FAB ============ */
+/* ============ FAB (sits above bottom nav) ============ */
 .fab {
   position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom));
+  bottom: calc(var(--bottom-nav-h) + 16px + env(safe-area-inset-bottom));
   right: 50%;
   transform: translateX(min(50%, 220px));
   background: var(--terracotta);
   color: var(--cream);
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 300;
   display: grid;
   place-items: center;
@@ -581,19 +652,4 @@ input, select {
 .section-head .count {
   font-size: 13px;
   color: var(--ink-mute);
-}
-
-/* ============ Settings link ============ */
-.menu-btn {
-  position: absolute;
-  right: 20px;
-  top: 26px;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  color: var(--ink-soft);
-  font-size: 20px;
-  background: var(--cream-deep);
 }

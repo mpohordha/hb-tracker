@@ -40,6 +40,18 @@ export async function saveProfile(profile) {
   await setItem(PROFILE_KEY, JSON.stringify(profile))
 }
 
+export async function updateProfile(patch) {
+  const current = (await getProfile()) || {}
+  const next = { ...current, ...patch, updatedAt: new Date().toISOString() }
+  await saveProfile(next)
+  return next
+}
+
+export async function clearAll() {
+  await removeItem(PROFILE_KEY)
+  await removeItem(READINGS_KEY)
+}
+
 export async function getReadings() {
   const raw = await getItem(READINGS_KEY)
   return raw ? JSON.parse(raw) : []

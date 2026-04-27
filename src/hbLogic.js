@@ -19,8 +19,47 @@ export const STATUS_META = {
   severe:   { label: 'Severe anaemia',   color: 'severe',   tone: 'alert' },
 }
 
+// BMI calculation. Note: standard BMI is intended for non-pregnant adults.
+// In pregnancy we typically use *pre-pregnancy* weight for BMI classification
+// (per WHO/IOM guidance). We label the result accordingly so users don't
+// confuse current weight in late pregnancy with a BMI category.
+export function calculateBMI(weightKg, heightCm) {
+  if (!weightKg || !heightCm) return null
+  const m = heightCm / 100
+  const bmi = weightKg / (m * m)
+  return Math.round(bmi * 10) / 10
+}
+
+export function bmiCategory(bmi) {
+  if (bmi == null) return null
+  if (bmi < 18.5) return { label: 'Underweight', tone: 'warn',
+    note: 'A higher pre-pregnancy BMI may have meant your iron stores were lower at the start of pregnancy. Eat regular meals and don\'t skip food.' }
+  if (bmi < 25)   return { label: 'Healthy weight', tone: 'good',
+    note: 'A healthy starting weight. Focus on iron-rich foods and regular antenatal visits.' }
+  if (bmi < 30)   return { label: 'Overweight', tone: 'warn',
+    note: 'Mention this to your midwife — they may give you specific dietary guidance for your pregnancy.' }
+  return { label: 'Obese', tone: 'warn',
+    note: 'Mention this to your midwife — pregnancies in this BMI range need closer monitoring. They will guide you.' }
+}
+
+// Honest, evidence-aligned expected-gain language.
+// We do NOT promise specific numbers because real recovery depends on iron stores,
+// cause of anaemia, gestational age, parasites, and tablet compliance.
+export function getExpectedGainNote(status) {
+  switch (status) {
+    case 'normal':
+      return null
+    case 'mild':
+    case 'moderate':
+      return 'With consistent iron-rich meals and your daily iron and folate tablets, most women see improvement of about 1–2 g/dL over 3–4 weeks. If your next reading does not improve, your midwife may need to investigate other causes such as malaria or parasites.'
+    case 'severe':
+      return 'Severe anaemia usually needs medical treatment, not diet alone. After treatment at the facility, your midwife will tell you when to expect your blood level to recover. Do not delay going.'
+    default:
+      return null
+  }
+}
+
 // Advice keyed to status. Plain language. Local Ghanaian food references.
-// Reviewed against MOH Ghana antenatal guidance principles — keep simple, avoid medication doses.
 export function getAdvice(status) {
   switch (status) {
     case 'normal':

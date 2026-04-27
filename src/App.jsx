@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getProfile, saveProfile, getReadings, addReading, deleteReading } from './storage'
-import { classify, STATUS_META, getAdvice, getTrendMessage } from './hbLogic'
+import { getProfile, saveProfile, updateProfile, getReadings, addReading, deleteReading, clearAll } from './storage'
 import Welcome from './components/Welcome'
 import Home from './components/Home'
+import Learn from './components/Learn'
+import Profile from './components/Profile'
 import AddReadingSheet from './components/AddReadingSheet'
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
   const [profile, setProfile] = useState(null)
   const [readings, setReadings] = useState([])
   const [showAdd, setShowAdd] = useState(false)
+  const [tab, setTab] = useState('home')
 
   useEffect(() => {
     (async () => {
@@ -24,6 +26,18 @@ export default function App() {
   const onCreateProfile = async (data) => {
     await saveProfile(data)
     setProfile(data)
+  }
+
+  const onUpdateProfile = async (patch) => {
+    const next = await updateProfile(patch)
+    setProfile(next)
+  }
+
+  const onClearAll = async () => {
+    await clearAll()
+    setProfile(null)
+    setReadings([])
+    setTab('home')
   }
 
   const onAddReading = async (data) => {
@@ -65,12 +79,49 @@ export default function App() {
 
   return (
     <div className="app">
-      <Home
-        profile={profile}
-        readings={readings}
-        onAddClick={() => setShowAdd(true)}
-        onDelete={onDeleteReading}
-      />
+      {tab === 'home' && (
+        <Home
+          profile={profile}
+          readings={readings}
+          onAddClick={() => setShowAdd(true)}
+          onDelete={onDeleteReading}
+        />
+      )}
+      {tab === 'learn' && <Learn />}
+      {tab === 'profile' && (
+        <Profile
+          profile={profile}
+          readings={readings}
+          onUpdate={onUpdateProfile}
+          onClearAll={onClearAll}
+        />
+      )}
+
+      {/* Bottom nav */}
+      <nav className="bottom-nav">
+        <button
+          className={`nav-btn ${tab === 'home' ? 'active' : ''}`}
+          onClick={() => setTab('home')}
+        >
+          <span className="nav-icon">🏠</span>
+          <span>Home</span>
+        </button>
+        <button
+          className={`nav-btn ${tab === 'learn' ? 'active' : ''}`}
+          onClick={() => setTab('learn')}
+        >
+          <span className="nav-icon">📖</span>
+          <span>Learn</span>
+        </button>
+        <button
+          className={`nav-btn ${tab === 'profile' ? 'active' : ''}`}
+          onClick={() => setTab('profile')}
+        >
+          <span className="nav-icon">👤</span>
+          <span>Profile</span>
+        </button>
+      </nav>
+
       {showAdd && (
         <AddReadingSheet
           onClose={() => setShowAdd(false)}

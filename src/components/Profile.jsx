@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { calculateBMI, bmiCategory } from '../hbLogic'
 import { exportData, exportReadingsCSV } from '../exporter'
+import RemindersCard from './RemindersCard'
 import {
   LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip,
 } from 'recharts'
@@ -146,6 +147,8 @@ export default function Profile({
                 </p>
               </div>
             )}
+
+            <RemindersCard />
 
             {/* Weight tracking */}
             <div className="card">

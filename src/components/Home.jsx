@@ -1,5 +1,6 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { classify, STATUS_META, getAdvice, getTrendMessage, getExpectedGainNote } from '../hbLogic'
+import AIMealSheet from './AIMealSheet'
 import {
   LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip,
 } from 'recharts'
@@ -68,6 +69,7 @@ function ReadingRow({ r, onDelete }) {
 }
 
 export default function Home({ profile, readings, onAddClick, onDelete }) {
+  const [showAIMeal, setShowAIMeal] = useState(false)
   const sorted = [...readings].sort((a, b) => new Date(b.date) - new Date(a.date))
   const latest = sorted[0]
   const status = latest ? classify(latest.hb) : null
@@ -155,6 +157,36 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
           </div>
         )}
 
+        {/* AI meal idea button */}
+        {latest && (
+          <div className="card" style={{ marginTop: 16, background: 'var(--cream-deep)', borderStyle: 'dashed' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: 'var(--gold-tint)', color: 'var(--gold)',
+                display: 'grid', placeItems: 'center', fontSize: 20, flexShrink: 0,
+              }}>
+                ✨
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>
+                  Get a meal idea
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--ink-mute)', marginTop: 2 }}>
+                  AI-generated suggestion. Not a substitute for your midwife.
+                </div>
+              </div>
+            </div>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setShowAIMeal(true)}
+              style={{ marginTop: 14 }}
+            >
+              Suggest a meal
+            </button>
+          </div>
+        )}
+
         {/* Chart */}
         {readings.length >= 2 && (
           <div className="card">
@@ -232,6 +264,14 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
       <button className="fab" onClick={onAddClick} aria-label="Add reading">
         +
       </button>
+
+      {showAIMeal && (
+        <AIMealSheet
+          profile={profile}
+          latestReading={latest}
+          onClose={() => setShowAIMeal(false)}
+        />
+      )}
     </>
   )
 }

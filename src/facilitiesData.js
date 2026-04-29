@@ -27,7 +27,7 @@ export const FACILITIES = [
     phone: '',
     services: 'General OPD, Antenatal, Delivery, Inpatient',
     notes: '',
-    verified: 'verified', lastChecked: 2026-04-25,
+    verified: 'verified', lastChecked: '2026-04-25',
   },
   {
     id: 'wr-mp-002',
@@ -40,7 +40,7 @@ export const FACILITIES = [
     phone: '',
     services: 'OPD, Antenatal, Family Planning',
     notes: '',
-    verified: 'verified', lastChecked: 2026-04-25,
+    verified: 'verified', lastChecked: '2026-04-25',
   },
   {
     id: 'wr-mp-003',
@@ -53,7 +53,7 @@ export const FACILITIES = [
     phone: '',
     services: 'Basic OPD, Antenatal home visits, Outreach',
     notes: '',
-    verified: 'verified', lastChecked: 2026-04-25,
+    verified: 'verified', lastChecked: '2026-04-25',
   },
   {
     id: 'wr-ahw-001',

@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { calculateBMI, bmiCategory } from '../hbLogic'
 import { exportData, exportReadingsCSV } from '../exporter'
+import { getFeedback, deleteFeedback } from '../storage'
+import { getWhatsAppLink, getSmsLink, PILOT } from '../pilot'
 import RemindersCard from './RemindersCard'
+import FeedbackSheet from './FeedbackSheet'
 import {
   LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip,
 } from 'recharts'
@@ -28,8 +31,17 @@ export default function Profile({
   const [height, setHeight] = useState(profile.heightCm?.toString() || '')
 
   const [showWeightSheet, setShowWeightSheet] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackList, setFeedbackList] = useState([])
   const [exportBusy, setExportBusy] = useState(false)
   const [exportMsg, setExportMsg] = useState('')
+
+  useEffect(() => {
+    (async () => {
+      const items = await getFeedback()
+      setFeedbackList(items)
+    })()
+  }, [showFeedback])
 
   // BMI uses pre-pregnancy weight if a prePregnancyWeight is set, else profile weight
   const bmiWeight = profile.prePregnancyWeightKg || profile.weightKg
@@ -245,9 +257,70 @@ export default function Profile({
               </p>
             </div>
 
+            {/* Pilot feedback */}
+            <div className="card">
+              <div className="card-title">Pilot feedback</div>
+              <p style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.6, marginBottom: 16 }}>
+                This is a pilot version. Your feedback shapes the next version. Tell us what's working, what's confusing, what's broken.
+              </p>
+
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowFeedback(true)}
+                style={{ marginBottom: 12 }}
+              >
+                💬 Send feedback
+              </button>
+
+              {feedbackList.length > 0 && (
+                <>
+                  <div style={{ fontSize: 12, color: 'var(--ink-mute)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 16, marginBottom: 8 }}>
+                    Saved feedback ({feedbackList.length})
+                  </div>
+                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {feedbackList.slice(0, 5).map(f => (
+                      <li key={f.id} style={{
+                        padding: '10px 12px',
+                        background: 'var(--cream)',
+                        borderRadius: 10,
+                        border: '1px solid var(--line)',
+                        fontSize: 13,
+                      }}>
+                        <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginBottom: 4 }}>
+                          {new Date(f.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                          {f.sentVia && ` · sent via ${f.sentVia}`}
+                        </div>
+                        <div style={{ color: 'var(--ink)', lineHeight: 1.5 }}>{f.message}</div>
+                        <button
+                          onClick={async () => {
+                            if (confirm('Delete this feedback entry?')) {
+                              const next = await deleteFeedback(f.id)
+                              setFeedbackList(next)
+                            }
+                          }}
+                          style={{
+                            marginTop: 6,
+                            background: 'none',
+                            color: 'var(--rose)',
+                            fontSize: 11,
+                            padding: 0,
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+
             {/* About */}
             <div className="card">
               <div className="card-title">About this app</div>
+              <p style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 12 }}>
+                Version: {PILOT.versionLabel}
+              </p>
               <p style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.6, marginBottom: 12 }}>
                 HB Tracker helps pregnant women in Ghana follow their haemoglobin levels and get plain-language guidance grounded in local foods and antenatal best practices.
               </p>
@@ -321,6 +394,13 @@ export default function Profile({
             onAddWeight(data)
             setShowWeightSheet(false)
           }}
+        />
+      )}
+
+      {showFeedback && (
+        <FeedbackSheet
+          profile={profile}
+          onClose={() => setShowFeedback(false)}
         />
       )}
     </>

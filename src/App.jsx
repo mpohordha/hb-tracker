@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { SplashScreen } from '@capacitor/splash-screen'
 import {
   getProfile, saveProfile, updateProfile, clearAll,
   getReadings, addReading, deleteReading,
@@ -8,6 +10,7 @@ import Welcome from './components/Welcome'
 import Home from './components/Home'
 import Learn from './components/Learn'
 import Profile from './components/Profile'
+import Facilities from './components/Facilities'
 import AddReadingSheet from './components/AddReadingSheet'
 
 export default function App() {
@@ -27,13 +30,16 @@ export default function App() {
       setReadings(r)
       setWeights(w)
       setLoaded(true)
+      // Hide splash once data is loaded
+      if (Capacitor.isNativePlatform()) {
+        try { await SplashScreen.hide() } catch {}
+      }
     })()
   }, [])
 
   const onCreateProfile = async (data) => {
     await saveProfile(data)
     setProfile(data)
-    // If they entered weight at onboarding, also seed the first weight entry
     if (data.weightKg) {
       const first = {
         id: Date.now().toString(),
@@ -113,9 +119,11 @@ export default function App() {
           readings={readings}
           onAddClick={() => setShowAdd(true)}
           onDelete={onDeleteReading}
+          onGoToFacilities={() => setTab('facilities')}
         />
       )}
       {tab === 'learn' && <Learn />}
+      {tab === 'facilities' && <Facilities />}
       {tab === 'profile' && (
         <Profile
           profile={profile}
@@ -132,6 +140,10 @@ export default function App() {
         <button className={`nav-btn ${tab === 'home' ? 'active' : ''}`} onClick={() => setTab('home')}>
           <span className="nav-icon">🏠</span>
           <span>Home</span>
+        </button>
+        <button className={`nav-btn ${tab === 'facilities' ? 'active' : ''}`} onClick={() => setTab('facilities')}>
+          <span className="nav-icon">🏥</span>
+          <span>Facilities</span>
         </button>
         <button className={`nav-btn ${tab === 'learn' ? 'active' : ''}`} onClick={() => setTab('learn')}>
           <span className="nav-icon">📖</span>

@@ -1,6 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { classify, STATUS_META, getAdvice, getTrendMessage, getExpectedGainNote } from '../hbLogic'
 import AIMealSheet from './AIMealSheet'
+import { getProxyUrl } from '../aiMeal'
+import { PILOT } from '../pilot'
 import {
   LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip,
 } from 'recharts'
@@ -68,8 +70,17 @@ function ReadingRow({ r, onDelete }) {
   )
 }
 
-export default function Home({ profile, readings, onAddClick, onDelete }) {
+export default function Home({ profile, readings, onAddClick, onDelete, onGoToFacilities }) {
   const [showAIMeal, setShowAIMeal] = useState(false)
+  const [aiAvailable, setAiAvailable] = useState(false)
+
+  useEffect(() => {
+    (async () => {
+      const url = await getProxyUrl()
+      setAiAvailable(!!url)
+    })()
+  }, [showAIMeal])
+
   const sorted = [...readings].sort((a, b) => new Date(b.date) - new Date(a.date))
   const latest = sorted[0]
   const status = latest ? classify(latest.hb) : null
@@ -90,10 +101,25 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
       <header className="app-header">
         <div className="brand">
           <div className="logo">HB</div>
-          <div>
+          <div style={{ flex: 1 }}>
             <h1>HB Tracker</h1>
             <div className="subtitle">My pregnancy health</div>
           </div>
+          {PILOT.isPilot && (
+            <span style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              background: 'var(--gold-tint)',
+              color: 'var(--gold)',
+              padding: '4px 8px',
+              borderRadius: 999,
+              alignSelf: 'flex-start',
+            }}>
+              {PILOT.versionLabel}
+            </span>
+          )}
         </div>
       </header>
 
@@ -157,8 +183,8 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
           </div>
         )}
 
-        {/* AI meal idea button */}
-        {latest && (
+        {/* AI meal idea button — only when proxy is configured */}
+        {latest && aiAvailable && (
           <div className="card" style={{ marginTop: 16, background: 'var(--cream-deep)', borderStyle: 'dashed' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
@@ -183,6 +209,32 @@ export default function Home({ profile, readings, onAddClick, onDelete }) {
               style={{ marginTop: 14 }}
             >
               Suggest a meal
+            </button>
+          </div>
+        )}
+
+        {/* Facility CTA for moderate/severe */}
+        {(status === 'moderate' || status === 'severe') && onGoToFacilities && (
+          <div className="card" style={{
+            marginTop: 16,
+            background: status === 'severe' ? 'var(--rose-tint)' : 'var(--gold-tint)',
+            border: 'none',
+          }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: 16, fontWeight: 600, color: status === 'severe' ? 'var(--rose)' : 'var(--gold)', marginBottom: 6 }}>
+              {status === 'severe' ? 'Go to a facility today' : 'Visit your facility this week'}
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.5, marginBottom: 12 }}>
+              We can show you health facilities near your location with directions and phone numbers.
+            </div>
+            <button
+              className="btn"
+              onClick={onGoToFacilities}
+              style={{
+                background: status === 'severe' ? 'var(--rose)' : 'var(--gold)',
+                color: 'white',
+              }}
+            >
+              🏥 Find a facility
             </button>
           </div>
         )}
